@@ -2,6 +2,7 @@ package conf;
 
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import org.apache.commons.dbutils.QueryRunner;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,11 +25,11 @@ public class JdbcConfig {
     @Value("${jdbc.password}")
     private String password;
 
-
+    //@Qualifier("ds2") 只取其中一个数据源
     @Bean(name = "runner")
     @Scope("prototype")
-    public QueryRunner createQueryRunner(DataSource ds) {
-        return new QueryRunner(ds);
+    public QueryRunner createQueryRunner(@Qualifier("ds2") DataSource dataSource) {
+        return new QueryRunner(dataSource);
     }
 
     @Bean(name = "ds")
@@ -37,6 +38,21 @@ public class JdbcConfig {
         try {
             dataSource.setDriverClass(driver);
             dataSource.setJdbcUrl(url);
+            dataSource.setUser(user);
+            dataSource.setPassword(password);
+        } catch (PropertyVetoException e) {
+            e.printStackTrace();
+        }
+        return dataSource;
+    }
+
+
+    @Bean(name = "ds2")
+    public ComboPooledDataSource createComboPooledDataSource2() {
+        ComboPooledDataSource dataSource = new ComboPooledDataSource();
+        try {
+            dataSource.setDriverClass(driver);
+            dataSource.setJdbcUrl("jdbc:mysql://localhost:3306/eesy02");
             dataSource.setUser(user);
             dataSource.setPassword(password);
         } catch (PropertyVetoException e) {
